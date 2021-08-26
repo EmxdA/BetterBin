@@ -1,0 +1,30 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <HC_SR04.h>
+//Define the variables for ultrasonic sensor
+#define trigPin      D10
+#define echoPin      D11
+
+double cm = 0.0;
+HC_SR04 rangefinder = HC_SR04(trigPin, echoPin);
+
+void setup() {
+    //Initiate the output and input of ultrasonic
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+}
+
+void loop() {
+    cm = rangefinder.getDistanceCM();
+    //If the cm , 10, open the left compartment
+    if (cm <= 10)
+    {
+        //Tell the argon to open left compartment
+        Particle.publish("openBin", "left");
+    }
+    //otherwise, open the right
+    else if (cm > 10 && cm < 20)
+    {
+        //Tell the argon to open right compartment
+        Particle.publish("openBin", "right");
+    }
+}
