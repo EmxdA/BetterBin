@@ -1,0 +1,77 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <HC_SR04.h>
+//Define the variables for ultrasonic sensor
+#define trigPin      D10
+#define echoPin      D11
+#define LED          D16
+
+//define the pin numbers for the two servo motors used
+#define motorLeft    D9
+#define motorRight   D16
+
+double cm = 0.0;
+
+//Initiate two servo motors
+Servo openLeftBin;
+Servo openRightBin;
+
+HC_SR04 rangefinder = HC_SR04(trigPin, echoPin);
+
+void setup() {
+    //Initiate the output and input of ultrasonic
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    pinMode(LED, OUTPUT);
+    
+    //Initiate left and right servo at the position 0
+    openLeftBin.attach(motorLeft);
+    openLeftBin.write(0);
+    delay(500)
+    openLeftBin.detach();
+    
+    openRightBin.attach(motorRight);
+    openRightBin.write(0);
+    delay(500)
+    openRightBin.detach();
+}
+
+void loop() {
+    //Contsantly monitor the ultrasonic
+    servoDistance();
+}
+
+void servoDistance() {
+    //Constantly monitor if any object is blocking the ultrasonic sensor, and assign the distance to the variable cm
+    cm = rangefinder.getDistanceCM();
+    //If the cm , 10, open the left compartment
+    if (cm <= 10)
+    {
+        digitalWrite(LED,HIGH);
+        delay(1000);
+        digitalWrite(LED,LOW);
+        activateLeftCompartment();
+    }
+    //otherwise, open the right
+    else if (cm > 10)
+    {
+        activateRightcompartment();
+    }
+}
+
+void activateLeftCompartment() {
+    openLeftBin.attach(motorLeft);
+    openLeftBin.write(180);
+    delay(10000);
+    openLeftBin.write(0);
+    delay(500);
+    openLeftBin.detach();
+}
+
+void activateRightcompartment() {
+    openRightBin.attach(motor1);
+    openRightBin.write(180);
+    delay(10000);
+    openRightBin.write(0);
+    delay(500);
+    openRightBin.detach();
+}
