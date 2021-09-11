@@ -1,0 +1,79 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <HC_SR04.h>
+// This #include statement was automatically added by the Particle IDE.
+//#include <ParticleWebLog.h>
+#include "Particle.h"
+
+// The event name to publish with
+const char *eventName = "Better Bin";
+//Define the variables for ultrasonic sensor
+#define trigPin      D10
+#define echoPin      D11
+
+#define trigPin2     D6
+#define echoPin2     D8
+SYSTEM_THREAD(ENABLED);
+
+double cm = 0.0;
+double fillStatus = 0.0;
+double newStatus = 0.0;
+double volume = 0.0;
+double prevStatus = 0.0;
+void publishTest();
+String currTime;
+int compartment = 0;
+HC_SR04 rangefinder = HC_SR04(trigPin, echoPin);
+HC_SR04 statusCheck = HC_SR04(trigPin2, echoPin2);
+
+
+void setup() {
+    Particle.variable("Volume", volume);
+    Particle.variable("Compartment", compartment);
+    Particle.variable("Date", currTime);
+    //Initiate the output and input of ultrasonic
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    pinMode(trigPin2, OUTPUT);
+    pinMode(echoPin2, OUTPUT);
+    double prevStatus = statusCheck.getDistanceCM();
+    
+}
+
+void loop() {
+    delay(10000);
+    cm = rangefinder.getDistanceCM();
+    fillStatus = statusCheck.getDistanceCM();
+    //If the cm , 10, open the left compartment
+    if (cm < 7)
+    {
+        //Tell the argon to open left compartment
+        Particle.publish("openBin", "left");
+        delay(10000);
+        newStatus = prevStatus - fillStatus;
+        volume = 20 * 30 * newStatus;
+        compartment = 1;
+        publishTest();
+        prevStatus = fillStatus;
+    }
+    //otherwise, open the right
+    else if (cm > 10 && cm < 20)
+    {
+        //Tell the argon to open right compartment
+        Particle.publish("openBin", "right");
+        delay(10000);
+        newStatus = prevStatus - fillStatus;
+        volume = 20 * 30 * newStatus;
+        compartment = 2;
+        publishTest();
+        prevStatus = fillStatus;
+    }
+    
+}
+
+void publishTest() {
+    char buf[128];
+
+    snprintf(buf, sizeof(buf), "[%d,%d]", compartment, volume);
+
+    Particle.publish(eventName, buf, PRIVATE);
+}
