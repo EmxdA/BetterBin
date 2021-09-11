@@ -1,3 +1,6 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <HC_SR04.h>
+
 #define motorLeft    A1
 #define motorRight   A0
 Servo openLeftBin;
@@ -6,11 +9,11 @@ Servo openRightBin;
 void setup() {
     Particle.subscribe("openBin", callServo);
     openLeftBin.attach(motorLeft );
-    openLeftBin.write(0);
+    openLeftBin.write(90);
     delay(500);
-    
-    openLeftBin.attach(motorRight);
-    openLeftBin.write(0);
+
+    openRightBin.attach(motorRight);
+    openRightBin.write(90);
     delay(500);
 }
 
@@ -31,18 +34,27 @@ void callServo(const char *event, const char *data)
 
 void activateLeftCompartment() {
     openLeftBin.attach(motorLeft);
-    openLeftBin.write(90);
+    openRightBin.attach(motorRight);
+    openLeftBin.write(180);
+    openRightBin.write(180);
     delay(1000);
-    openLeftBin.write(0);
+    openLeftBin.write(90);
+    openRightBin.write(90);
     delay(1000);
     openLeftBin.detach();
+    openRightBin.detach();
+    
 }
 
 void activateRightcompartment() {
+    openLeftBin.attach(motorLeft);
     openRightBin.attach(motorRight);
-    openRightBin.write(90);
-    delay(500);
+    openLeftBin.write(0);
     openRightBin.write(0);
-    delay(500);
+    delay(1000);
+    openLeftBin.write(90);
+    openRightBin.write(90);
+    delay(1000);
+    openLeftBin.detach();
     openRightBin.detach();
 }
