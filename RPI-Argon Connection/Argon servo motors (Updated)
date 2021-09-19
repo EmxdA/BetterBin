@@ -1,7 +1,8 @@
 #define motorLeft    A1
 #define motorRight   A0
 
-#define servoDelay   1000
+#define openDelay   3000
+#define closeDelay  1000
 Servo openLeftBin;
 Servo openRightBin;
 String currTime;
@@ -13,7 +14,7 @@ void setup() {
     delay(500);
     
     openLeftBin.attach(motorRight);
-    openLeftBin.write(0);
+    openLeftBin.write(180);
     delay(500);
 }
 
@@ -32,24 +33,26 @@ void callServo(const char *event, const char *data)
     }
 }
 
-void activateLeftCompartment() {
-    openLeftBin.attach(motorLeft);
-    openLeftBin.write(90);
-    delay(servoDelay);
-    openLeftBin.write(0);
+void activateLeftCompartment() 
+{
+    openRightBin.attach(motorRight);
+    openRightBin.write(90);
+    delay(3000);
+    openRightBin.write(180);
     delay(1000);
-    openLeftBin.detach();
+    openRightBin.detach();
     
     Particle.publish("openBin", "checkLeft");
 }
 
 void activateRightcompartment() {
-    openRightBin.attach(motorRight);
-    openRightBin.write(90);
-    delay(servoDelay);
-    openRightBin.write(0);
+    openLeftBin.attach(motorLeft);
+    openLeftBin.write(90);
+    delay(3000);
+    openLeftBin.write(0);
     delay(1000);
-    openRightBin.detach();
+    openLeftBin.detach();
+    
     Particle.publish("openBin", "checkRight");
 }
 
