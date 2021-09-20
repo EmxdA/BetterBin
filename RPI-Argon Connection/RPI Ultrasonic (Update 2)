@@ -12,34 +12,32 @@ const char *eventName = "Better Bin";
 #define echoPin      D11
 #define trigPin2     D6
 #define echoPin2     D8
+#define echoPin3     D4
+#define trigPin3     D5
 
 //define an open delay time
 #define openDelay   3
+#define binHeight   0
 
 //We are initiating the triggerpins and the echo pins of both ultrasonic sensors
 SYSTEM_THREAD(ENABLED);
 HC_SR04 rangefinder = HC_SR04(trigPin, echoPin);
-HC_SR04 statusCheck = HC_SR04(trigPin2, echoPin2);
-
+HC_SR04 statusCheckLeft = HC_SR04(trigPin2, echoPin2);
+HC_SR04 statusCheckRight = HC_SR04(trigPin3, echoPin3);
 
 //initiating variables of type double
 //cm tracks the distance detected by the ultrasonic sensor
 double cm = 0.0;
-//These variables are used to calculate current volume of the bin
-double fillStatus = 0.0;
-double newStatus = 0.0;
-double prevStatus = 0.0;
-
 //calculating volume of both left and right compartment.
 int leftVolume = 0;
 int rightVolume = 0;
 int compartment = 0;
-int wasteLevels = 0; 
+int wasteLevels = 0;
 
 //The flag variable will be used as a reference for the switch statement in script.js on the google spreadsheet
 int flag = -1;
 
-
+//float status = 0;
 bool leftTrigger = false;
 
 void publishTest();
@@ -54,14 +52,12 @@ void setup() {
     pinMode(echoPin, INPUT);
     pinMode(trigPin2, OUTPUT);
     pinMode(echoPin2, OUTPUT);
-    double prevStatus = statusCheck.getDistanceCM();
     
 }
 
 void loop() {
     delay(1000);
     cm = rangefinder.getDistanceCM();
-    fillStatus = statusCheck.getDistanceCM();
     //If the cm , 10, open the left compartment
     if (cm < 7)
     {
@@ -69,13 +65,6 @@ void loop() {
          {
             Particle.publish("openBin", "left");
          }
-        
-        //Tell the argon to open left compartment
-        //delay(10000);
-        //newStatus = prevStatus - fillStatus;
-        //volume = 20 * 30 * newStatus;
-
-        //prevStatus = fillStatus;
     }
     //otherwise, open the right
     else if (cm > 10 && cm < 20)
@@ -85,11 +74,6 @@ void loop() {
          {
             Particle.publish("openBin", "right");
          }
-        //Tell the argon to open right compartment
-        //newStatus = prevStatus - fillStatus;
-        //volume = 20 * 30 * newStatus;
-        //compartment = 2;
-        //prevStatus = fillStatus;
     }
 }
 
@@ -144,10 +128,14 @@ bool openRight()
 
 
 int calcVolume(int compartment){
+    float status;
     if (compartment == 1)
     {
         //Take left reading
-        int temp = rand() % 30;
+        //int temp = rand() % 30;
+        //int temp = 15;
+        status = statusCheckLeft.getDistanceCM();
+        int temp = ((binHeight-(binHeight - status))/binHeight)*30;
         if (temp < leftVolume)
         {
             flag = 2;
@@ -162,7 +150,10 @@ int calcVolume(int compartment){
     if (compartment == 2)
     {
         //Take left reading
-        int temp = rand() % 30;
+        //int temp = rand() % 30;
+        //int temp = 7;
+        status = statusCheckRight.getDistanceCM();
+        int temp = ((binHeight-(binHeight - status))/binHeight)*30;
         if (temp < rightVolume)
         {
             flag = 3;
