@@ -14,7 +14,7 @@ const char *eventName = "Better Bin";
 #define echoPin2     D8
 
 //define an open delay time
-#define openDelay   2
+#define openDelay   3
 
 //We are initiating the triggerpins and the echo pins of both ultrasonic sensors
 SYSTEM_THREAD(ENABLED);
