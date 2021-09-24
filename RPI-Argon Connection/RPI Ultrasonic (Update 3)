@@ -3,13 +3,13 @@
 
 // This #include statement was automatically added by the Particle IDE.
 #include <HC_SR04.h>
+#include <math.h>
 // This #include statement was automatically added by the Particle IDE.
 //#include <ParticleWebLog.h>
 #include "Particle.h"
-
 // The event name to publish data to the webhook, and then to the excel sheet.
 const char *eventName = "Better Bin";
-
+const float capacity = 30;
 //Define the variables for ultrasonic sensor
 #define trigPin      D10
 #define echoPin      D11
@@ -40,6 +40,8 @@ int compartment = 0;
 int wasteLevels = 0;
 int lastSecond = 0;
 
+float leftStatus;
+float rightStatus;
 //The flag variable will be used as a reference for the switch statement in script.js on the google spreadsheet
 int flag = -1;
 
@@ -146,7 +148,7 @@ int calcVolume(int compartment){
         //int temp = rand() % 30;
         //int temp = 15;
         status = statusCheckLeft.getDistanceCM();
-        int temp = 5;//((binHeight-(binHeight - status))/binHeight)*30;
+        int temp = 5;//((binHeight-(binHeight - status))/binHeight)*capacity;
         if (temp < leftVolume)
         {
             flag = 2;
@@ -156,20 +158,6 @@ int calcVolume(int compartment){
             flag = 0;
         }
         leftVolume = temp;
-        lcd->setCursor(0,0);
-        lcd->print("Recycling:");
-        lcd->setCursor(10,0);
-        lcd->print(leftVolume);
-        if (leftVolume > 9): 
-        {
-            lcd->setCursor(12,0)
-            lcd->print("%");
-        }
-        else:
-        {
-            lcd->setCursor(11,0)
-            lcd->print("%");
-        }
         return leftVolume;
     }
     if (compartment == 2)
@@ -178,7 +166,7 @@ int calcVolume(int compartment){
         //int temp = rand() % 30;
         //int temp = 7;
         status = statusCheckRight.getDistanceCM();
-        int temp = 5;//((binHeight-(binHeight - status))/binHeight)*30;
+        int temp = 5;//((binHeight-(binHeight - status))/binHeight)*capacity;
         if (temp < rightVolume)
         {
             flag = 3;
@@ -188,20 +176,6 @@ int calcVolume(int compartment){
             flag = 1;
         }
         rightVolume = temp;
-        lcd->setCursor(0,1);
-        lcd->print("Waste:");
-        lcd->setCursor(6,1);
-        lcd->print(rightVolume);
-        if (rightVolume > 9): 
-        {
-            lcd->setCursor(8,1)
-            lcd->print("%");
-        }
-        else:
-        {
-            lcd->setCursor(7,1)
-            lcd->print("%");
-        }
         return rightVolume;
     }
     return -1;
@@ -262,10 +236,55 @@ void CurrentTime()
     }
 }
 
+void printStatus()
+{
+    
+    leftStatus = (leftVolume/capacity)*100;
+    rightStatus = (rightVolume/capacity)*100;
+    
+    char lStatStr[32];
+
+    lcd->clear();
+    lcd->setCursor(0,0);
+    if(leftStatus  < 10 & leftStatus  > 0)
+    {
+        snprintf(lStatStr, sizeof(lStatStr), "Recycling  %.2f%%", leftStatus);
+        lcd->print(lStatStr);
+    }
+    else if (leftStatus  <= 0)
+    {
+        lcd->print("Recycling  Empty");
+    }
+    else
+    {
+        snprintf(lStatStr, sizeof(lStatStr), "Recycling %.2f%%", leftStatus);
+        lcd->print(lStatStr);
+    }
+    
+    
+    char rStatStr[32];
+    lcd->setCursor(0,1);
+    if(rightStatus  < 10 & rightStatus  > 0)
+    {
+        snprintf(rStatStr, sizeof(rStatStr), "Waste      %.2f%%", rightStatus);
+        lcd->print(rStatStr);
+    }
+    else if (rightStatus  <= 0)
+    {
+        lcd->print("Waste      Empty");
+    }
+    else
+    {
+        snprintf(rStatStr, sizeof(rStatStr), "Waste     %.2f%%", rightStatus);
+        lcd->print(rStatStr);
+    }
+    
+}
 //Publishes the data to the google spreadsheet through the webhook Better bin
 void publishTest() {
     char buf[128];
     int data = calcVolume(compartment);
+    printStatus();
     snprintf(buf,sizeof(buf),"[%d,%d]",flag, data);
 
     Particle.publish(eventName, buf, PRIVATE);
