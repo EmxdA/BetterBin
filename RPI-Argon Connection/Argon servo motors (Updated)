@@ -2,7 +2,7 @@
 #define motorLeft    A1
 #define motorRight   A0
 
-//SEt open and close delay for bin lids
+//Set open and close delay for bin lids
 #define openDelay   3000
 #define closeDelay  1000
 
